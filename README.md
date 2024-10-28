@@ -111,8 +111,9 @@ Updated line 464 in `models/diff_talking_head.py` to enable CPU support and chan
 Deployed a simple flask app that allows you to upload or record an audio and perform face-animation. 
 
 ```shell 
-python app_2.py
+python app.py
 ```
+app_2.py will be the one to support streaming via sockets.
 
 ## Training
 
