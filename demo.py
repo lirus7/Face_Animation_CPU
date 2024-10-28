@@ -17,7 +17,7 @@ from utils import NullableArgs
 from utils.media import combine_video_and_audio, convert_video, reencode_audio
 
 warnings.filterwarnings('ignore', message='PySoundFile failed. Trying audioread instead.')
-
+import time
 
 class Demo:
     def __init__(self, args, load_flame=True, load_renderer=True):
@@ -91,11 +91,15 @@ class Demo:
 
     def infer_from_file(self, audio_path, coef_path, out_path, style_path=None, tex_path=None, n_repetitions=1,
                         ignore_global_rot=False, cfg_mode=None, cfg_cond=None, cfg_scale=1.15):
+        print("herehheheheh")
+        start_time = time.time()
         coef_dict = self.infer_coeffs(audio_path, coef_path, style_path, n_repetitions,
                                       cfg_mode, cfg_cond, cfg_scale, include_shape=True)
         assert self.load_flame, 'FLAME model is not loaded.'
         verts_list = utils.coef_dict_to_vertices(coef_dict, self.flame, self.rot_repr,
                                                  ignore_global_rot=ignore_global_rot).detach().cpu().numpy()
+
+        print(f"TIME TAKEN: {time.time()-start_time}")
 
         if n_repetitions == 1:
             if self.save_coef:
@@ -250,6 +254,7 @@ class Demo:
         Args:
             verts_list (np.ndarray): (L, 5023, 3)
         """
+        print("HEHREHRHEHRE")
         assert self.load_renderer, 'Renderer is not loaded.'
         faces = self.flame.faces_tensor.detach().cpu().numpy()
         if isinstance(texture, (str, Path)):

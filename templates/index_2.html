@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Face Mesh Animation</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
+</head>
+<body>
+    <h1>Real-Time Face Mesh Animation</h1>
+    <video id="video" width="640" height="480" controls autoplay></video>
+    <button id="recordButton">Start Recording</button>
+    <script>
+        const socket = io();
+        let mediaRecorder;
+        let isRecording = false;
+
+        // Function to start recording audio
+        async function startRecording() {
+            // Set audio constraints to record at 16 kHz
+            const audioConstraints = {
+                audio: {
+                    sampleRate: 16000, // Set sample rate to 16 kHz
+                    channelCount: 1,    // Mono audio
+                    echoCancellation: true // Optional: reduce echo
+                }
+            };
+
+            const stream = await navigator.mediaDevices.getUserMedia(audioConstraints);
+            mediaRecorder = new MediaRecorder(stream);
+            mediaRecorder.start();
+
+            mediaRecorder.ondataavailable = (event) => {
+                const audioData = event.data;
+                // Send audio data to the server
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    socket.emit('audio_stream', { audio: reader.result });
+                };
+                reader.readAsArrayBuffer(audioData);
+            };
+
+            mediaRecorder.onstop = () => {
+                console.log('Recording stopped');
+            };
+
+            isRecording = true;
+            document.getElementById('recordButton').innerText = 'Stop Recording';
+        }
+
+        // Function to stop recording audio
+        function stopRecording() {
+            mediaRecorder.stop();
+            isRecording = false;
+            document.getElementById('recordButton').innerText = 'Start Recording';
+        }
+
+        // Button click event handler
+        document.getElementById('recordButton').addEventListener('click', () => {
+            if (isRecording) {
+                stopRecording();
+            } else {
+                startRecording();
+            }
+        });
+
+        // Listen for animation frames from the server
+        socket.on('animation_frame', (data) => {
+            const video = document.getElementById('video');
+            video.src = `/video/${data.video_path}`; // Update the video source
+        });
+
+        socket.on('error', (data) => {
+            console.error(data.message);
+        });
+    </script>
+</body>
+</html>

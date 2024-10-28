@@ -106,6 +106,14 @@ python demo.py --exp_name head --iter 110000 -a demo/input/audio/FAST.flac -c de
 ```
 Updated line 464 in `models/diff_talking_head.py` to enable CPU support and changed the number of generations from 3 to 1.
 
+## Web-App
+
+Deployed a simple flask app that allows you to upload or record an audio and perform face-animation. 
+
+```shell 
+python app_2.py
+```
+
 ## Training
 
 Please note:
@@ -134,6 +142,20 @@ The denoising network will be saved under the `experiments/DPT/<exp_name>` folde
 [TODO]
 
 ---
+
+## Inference 
+
+
+| Date   | Machine Config             | Time                      | Notes                                                    |
+| ----   | -------------------------- | ------------------------- | ------------                                             |
+| 23 Oct | AWS-CPU-4vCPU-16GB-RAM     | 6it/s + load_time         | Currently the initial load times are high.               |
+|        |                            |                           |                                                          |
+
+## Inference Optimizations to run on CPU
+- [ ] Current State, DDPM with 500 steps -> Change to DDIM.
+- [ ] Find the right DDIM number of steps.
+- [ ] Convert models to torchscript.
+- [ ] Look into openVINO / CoreML etc.
 
 ## Citation
 
