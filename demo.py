@@ -91,15 +91,19 @@ class Demo:
 
     def infer_from_file(self, audio_path, coef_path, out_path, style_path=None, tex_path=None, n_repetitions=1,
                         ignore_global_rot=False, cfg_mode=None, cfg_cond=None, cfg_scale=1.15):
-        print("herehheheheh")
-        start_time = time.time()
+
+        time_1 = time.time()
         coef_dict = self.infer_coeffs(audio_path, coef_path, style_path, n_repetitions,
                                       cfg_mode, cfg_cond, cfg_scale, include_shape=True)
+
+        print("TIME TAKEN FOR INFER_COEFF: ", time.time()-time_1)
+
+        time_2 = time.time()
         assert self.load_flame, 'FLAME model is not loaded.'
         verts_list = utils.coef_dict_to_vertices(coef_dict, self.flame, self.rot_repr,
                                                  ignore_global_rot=ignore_global_rot).detach().cpu().numpy()
-
-        print(f"TIME TAKEN: {time.time()-start_time}")
+        
+        print("TIME TAKEN FOR COEFF TO VERTICES: ", time.time()-time_2)
 
         if n_repetitions == 1:
             if self.save_coef:
@@ -199,12 +203,12 @@ class Demo:
             # generate motion coefficients
             if i == 0:
                 # -> (N, L, d_motion=n_code_per_frame * code_dim)
-                motion_feat, noise, prev_audio_feat = self.model.sample(audio_in, shape_coef, style_feat,
+                motion_feat, noise, prev_audio_feat = self.model.ddim_sample(audio_in, shape_coef, style_feat,
                                                                         indicator=indicator, cfg_mode=cfg_mode,
                                                                         cfg_cond=cfg_cond, cfg_scale=cfg_scale,
                                                                         dynamic_threshold=self.dynamic_threshold)
             else:
-                motion_feat, noise, prev_audio_feat = self.model.sample(audio_in, shape_coef, style_feat,
+                motion_feat, noise, prev_audio_feat = self.model.ddim_sample(audio_in, shape_coef, style_feat,
                                                                         prev_motion_feat, prev_audio_feat, noise,
                                                                         indicator=indicator, cfg_mode=cfg_mode,
                                                                         cfg_cond=cfg_cond, cfg_scale=cfg_scale,
@@ -254,7 +258,6 @@ class Demo:
         Args:
             verts_list (np.ndarray): (L, 5023, 3)
         """
-        print("HEHREHRHEHRE")
         assert self.load_renderer, 'Renderer is not loaded.'
         faces = self.flame.faces_tensor.detach().cpu().numpy()
         if isinstance(texture, (str, Path)):
